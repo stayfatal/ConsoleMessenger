@@ -31,7 +31,7 @@ func (im *InterfaceManager) switchToChatsMenu() {
 
 	for key, val := range chats {
 		chatsMenu.AddItem(val, key, ' ', func() {
-
+			im.app.Stop()
 		})
 	}
 

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"messenger/internal/database"
+	"messenger/internal/parsers"
 	websocket "messenger/internal/websocket/server"
 	"net/http"
 
@@ -17,15 +18,15 @@ func (hm *handlersManager) NewChatHandler(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	if val, ok := c.Get("id"); !ok {
+	val, ok := c.Get("id")
+	if !ok {
 		log.Error().Err(err).Msg("cant get id from token")
 		return
 	}
 
-	id, err := uuid.Parse()
+	id, err := parsers.FromAnyToUUID(val)
 	if err != nil {
-		log.Error().Err(err).Msg("cant parse uuid from context")
+		log.Error().Err(err).Msg("cant convert uuid")
 		return
 	}
 

@@ -9,7 +9,7 @@ import (
 )
 
 func WriteToken(token string) {
-	envFile := "C:/Go-Projects/Small-Messenger/token.env"
+	envFile := "token.env"
 
 	file, err := os.OpenFile(envFile, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -27,7 +27,7 @@ func WriteToken(token string) {
 }
 
 func GetToken() string {
-	err := godotenv.Load("C:/Go-Projects/Small-Messenger/token.env")
+	err := godotenv.Load("token.env")
 	if err != nil {
 		log.Error().Err(err).Msg("cant load token.env")
 		return ""

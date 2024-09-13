@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"messenger/internal/parsers"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,18 +8,11 @@ import (
 )
 
 func (hm *handlersManager) GetChatsHandler(c *gin.Context) {
-	val, _ := c.Get("id")
-
-	id, err := parsers.FromAnyToUUID(val)
-	if err != nil {
-		log.Error().Err(err).Msg("cant parse uuid")
-		c.String(http.StatusBadRequest, err.Error())
-		return
-	}
+	id := c.GetInt("id")
 
 	chats, err := hm.dm.GetAllUserChats(id)
 	if err != nil {
-		log.Error().Err(err).Msg("cant parse uuid")
+		log.Error().Err(err).Msg("cant get user's chats")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}

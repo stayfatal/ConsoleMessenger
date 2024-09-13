@@ -1,26 +1,22 @@
 package websocket
 
 import (
-	"net"
-	"sync"
+	"net/http"
 
-	"github.com/google/uuid"
+	"github.com/gin-gonic/gin"
+	"github.com/gobwas/ws"
+	"github.com/rs/zerolog/log"
 )
 
-var (
-	mu    sync.Mutex
-	conns map[uuid.UUID]net.Conn = make(map[uuid.UUID]net.Conn)
-)
+func (wm *WebsocketManager) Upgrade(c *gin.Context) {
+	conn, _, _, err := ws.UpgradeHTTP(c.Request, c.Writer)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		log.Error().Err(err).Msg("cant upgrade to websocket")
+		return
+	}
 
-func AddConn(id uuid.UUID, conn net.Conn) {
-	mu.Lock()
-	conns[id] = conn
-	mu.Unlock()
-}
+	id := c.GetInt("id")
 
-func GetConn(id uuid.UUID) net.Conn {
-	mu.Lock()
-	conn := conns[id]
-	mu.Unlock()
-	return conn
+	wm.AddChatMember(id, conn)
 }

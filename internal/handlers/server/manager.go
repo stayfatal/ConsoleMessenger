@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"messenger/internal/database"
+	websocket "messenger/internal/websocket/server"
 )
 
 type handlersManager struct {
 	dm *database.DbManager
+	wm *websocket.WebsocketManager
 }
 
 func NewHandlersManager() *handlersManager {
-	dm := database.GetDbManager()
-	return &handlersManager{dm: dm}
+	return &handlersManager{dm: database.GetDbManager(), wm: websocket.GetWebsocketManager()}
 }

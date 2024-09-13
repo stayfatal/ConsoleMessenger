@@ -9,12 +9,10 @@ import (
 )
 
 func main() {
-	im := iface.
-		NewInterfaceManager()
+	im := iface.NewInterfaceManager()
 
-	if err := im.RunApp(); err != nil {
-		log.Fatal().Err(err).Msg("")
-	}
+	log.Info().Msg("client is running")
+	im.RunApp()
 }
 
 func init() {

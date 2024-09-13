@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -27,17 +26,16 @@ func (hm *handlersManager) CreateUserHandler(c *gin.Context) {
 		return
 	}
 
-	user.Id = uuid.New()
 	user.Password = string(securedPass)
 
-	err = hm.dm.CreateUser(user)
+	userId, err := hm.dm.CreateUser(user)
 	if err != nil {
 		log.Error().Err(err).Msg("unable to create user")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	token, err := authentication.CreateToken(user.Id.String())
+	token, err := authentication.CreateToken(userId)
 	if err != nil {
 		log.Error().Err(err).Msg("unable to create token")
 		c.String(http.StatusInternalServerError, err.Error())
@@ -65,7 +63,7 @@ func (hm *handlersManager) LoginHandler(c *gin.Context) {
 		return
 	}
 
-	token, err := authentication.CreateToken(scannedUser.Id.String())
+	token, err := authentication.CreateToken(scannedUser.Id)
 	if err != nil {
 		log.Error().Err(err).Msg("cant create token")
 		c.String(http.StatusInternalServerError, err.Error())

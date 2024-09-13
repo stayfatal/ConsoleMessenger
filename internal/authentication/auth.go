@@ -10,13 +10,14 @@ import (
 var secretKey = []byte("super-secret-key")
 
 type Claims struct {
+	Id int
 	jwt.StandardClaims
 }
 
-func CreateToken(Id string) (string, error) {
+func CreateToken(Id int) (string, error) {
 	claims := &Claims{
+		Id: Id,
 		StandardClaims: jwt.StandardClaims{
-			Id:        Id,
 			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
 		},
 	}

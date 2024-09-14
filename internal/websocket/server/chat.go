@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"fmt"
 	"messenger/internal/database"
 
 	"github.com/gobwas/ws/wsutil"
@@ -15,8 +16,10 @@ func (wm *WebsocketManager) StartChat(chatId int) {
 	}
 
 	for _, id := range members {
-		wm.StartReader(id, chatId, members)
-		wm.StartWriter(id)
+		if wm.IsConnected(id) {
+			wm.StartReader(id, chatId, members)
+			wm.StartWriter(id)
+		}
 	}
 }
 
@@ -29,6 +32,7 @@ func (wm *WebsocketManager) StartReader(id, chatId int, members []int) {
 				log.Error().Err(err).Msg("cant read from conn")
 				return
 			}
+			fmt.Println(string(msg))
 
 			wm.BroadCast(id, chatId, msg, members)
 		}
@@ -40,7 +44,7 @@ func (wm *WebsocketManager) StartWriter(id int) {
 		cm := wm.GetChatMember(id)
 		for {
 			msg := <-cm.out
-			err := wsutil.WriteClientText(cm.conn, msg)
+			err := wsutil.WriteServerText(cm.conn, msg)
 			if err != nil {
 				log.Error().Err(err).Msg("cant write to conn")
 				return

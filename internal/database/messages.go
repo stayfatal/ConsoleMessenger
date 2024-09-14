@@ -11,6 +11,6 @@ type Message struct {
 }
 
 func (dm *DbManager) SaveMessage(msg Message) error {
-	_, err := dm.db.Exec("insert into messages (sender_id,recipient_id,message) values ($1,$2,$3)", msg.ChatId, msg.UserId, msg.Text)
+	_, err := dm.db.Exec("insert into messages (chat_id,user_id,message) values ($1,$2,$3)", msg.ChatId, msg.UserId, msg.Text)
 	return err
 }

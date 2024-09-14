@@ -25,7 +25,7 @@ func main() {
 	auth.GET("/token", hm.ValidateTokenHandler)
 
 	auth.GET("/ws/chats", hm.NewChatHandler)
-	auth.GET("/ws/chats/:chat_id", hm.JoinChatHandler)
+	auth.GET("/ws/chats/:id", hm.JoinChatHandler)
 
 	if err := router.Run(":8080"); err != nil {
 		log.Fatal().Err(err).Msg("Failed to run server")

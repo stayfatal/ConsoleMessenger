@@ -60,7 +60,7 @@ func (hm *handlersManager) NewChatHandler(c *gin.Context) {
 func (hm *handlersManager) JoinChatHandler(c *gin.Context) {
 	hm.wm.Upgrade(c)
 
-	chatId, err := strconv.Atoi(c.Params.ByName("chat_id"))
+	chatId, err := strconv.Atoi(c.Params.ByName("id"))
 	if err != nil {
 		log.Error().Err(err).Msg("cant parse chat_id")
 		return

@@ -109,76 +109,31 @@ func (im *InterfaceManager) switchToChatsMenu() {
 }
 
 func (im *InterfaceManager) switchToNewChatMenu() {
-	fmt.Println("Please enter recipient's username")
+	fmt.Println("Please enter recipient's username\nTo exit write \"back\"")
 
 	var username string
 	for {
 		_, err := fmt.Scanf("%s\n", &username)
 		if err != nil {
-			log.Error().Err(err).Msg("incorrect input please check correct format")
+			log.Error().Err(err).Msg("incorrect input")
 			continue
+		}
+
+		if username == "back" {
+			im.switchToMainMenu()
 		}
 		break
 	}
 
-	im.hm.NewChatHandler(username)
-	im.switchToMainMenu()
+	im.switchToChatMenu(username)
 }
 
-// func (im *InterfaceManager) switchToChatsMenu() {
-// 	chatsMenu := tview.NewList()
-// 	im.app.SetRoot(chatsMenu, true).SetFocus(chatsMenu)
+func (im *InterfaceManager) switchToChatMenu(username string) {
+	str := fmt.Sprintf("Chat with %s", username)
+	fmt.Println(str)
 
-// 	chatsMenu = chatsMenu.AddItem("New chat", " ", '1', func() {
-// 		im.switchToNewChatMenu()
-// 	})
-
-// 	chats := im.hm.GetChatsHandler()
-
-// 	var i int = 2
-// 	for _, val := range chats {
-// 		chatsMenu.AddItem(val, "", rune('0'+i), func() {
-// 			// im.app.
-// 		})
-// 		i++
-// 	}
-
-// 	chatsMenu.AddItem("Quit", "Exit from app", rune('0'+i), func() {
-// 		im.app.Stop()
-// 		os.Exit(0)
-// 	})
-
-// }
-
-// func (im *InterfaceManager) switchToNewChatMenu() {
-// 	var username string
-// 	newChatMenu := tview.NewForm().
-// 		AddInputField("username : ", "", 20, nil, func(text string) {
-// 			username = text
-// 		}).
-// 		AddButton("Enter", func() {
-// 			im.hm.NewChatHandler(username)
-// 			im.switchToMainMenu()
-// 		}).
-// 		AddButton("Back", im.switchToMainMenu)
-// 	im.app.SetRoot(newChatMenu, true).SetFocus(newChatMenu)
-// }
-
-// func (im *InterfaceManager) switchToLoginMenu() {
-// 	var username, password string
-// 	loginMenu := tview.NewForm().
-// 		AddInputField("Username: ", "", 20, nil, func(text string) {
-// 			username = text
-// 		}).
-// 		AddInputField("Password : ", "", 20, nil, func(text string) {
-// 			password = text
-// 		}).
-// 		AddButton("Enter", func() {
-// 			im.hm.LoginHandler(username, password)
-// 			im.switchToMainMenu()
-// 		}).AddButton("Back", im.switchToStartMenu)
-// 	im.app.SetRoot(loginMenu, true).SetFocus(loginMenu)
-// }
+	im.hm.NewChatHandler(username)
+}
 
 func (im *InterfaceManager) switchToMainMenu() {
 	if im.hm.ValidateTokenHandler() {

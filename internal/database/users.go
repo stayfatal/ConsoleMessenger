@@ -30,3 +30,8 @@ func (dm *DbManager) GetUserById(id int) (user User, err error) {
 	err = dm.db.QueryRow("select * from users where id = $1", id).Scan(&user.Id, &user.Username, &user.Password)
 	return
 }
+
+func (dm *DbManager) GetUsernameById(id int) (username string, err error) {
+	err = dm.db.QueryRow("select username from users where id = $1", id).Scan(&username)
+	return
+}

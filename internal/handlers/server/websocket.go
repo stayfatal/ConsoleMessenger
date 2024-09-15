@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"messenger/internal/database"
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -54,11 +55,16 @@ func (hm *handlersManager) NewChatHandler(c *gin.Context) {
 		return
 	}
 
-	hm.wm.StartChat(chatId)
+	hm.wm.JoinChat(senderId, chatId)
 }
 
 func (hm *handlersManager) JoinChatHandler(c *gin.Context) {
-	hm.wm.Upgrade(c)
+	err := hm.wm.Upgrade(c)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		log.Error().Err(err).Msg("cant upgrade to websocket")
+		return
+	}
 
 	chatId, err := strconv.Atoi(c.Params.ByName("id"))
 	if err != nil {
@@ -66,5 +72,7 @@ func (hm *handlersManager) JoinChatHandler(c *gin.Context) {
 		return
 	}
 
-	hm.wm.StartChat(chatId)
+	senderId := c.GetInt("id")
+
+	hm.wm.JoinChat(senderId, chatId)
 }

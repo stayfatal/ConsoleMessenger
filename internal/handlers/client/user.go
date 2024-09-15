@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"messenger/internal/env"
 	"net/http"
 
@@ -20,7 +21,7 @@ func (hm *HandlersManager) RegistrationHandler(username, password string) {
 			"password": password,
 		}).
 		SetResult(&resp).
-		Post("http://localhost:8080/register")
+		Post(fmt.Sprintf("https://%s/register", hm.addr))
 
 	if err != nil {
 		log.Error().Err(err).Msg("cant request registration")
@@ -43,7 +44,7 @@ func (hm *HandlersManager) LoginHandler(username, password string) {
 			"password": password,
 		}).
 		SetResult(&resp).
-		Post("http://localhost:8080/login")
+		Post(fmt.Sprintf("https://%s/login", hm.addr))
 
 	if err != nil {
 		log.Error().Err(err).Msg("cant request login")
@@ -58,7 +59,7 @@ func (hm *HandlersManager) ValidateTokenHandler() bool {
 
 	resp, err := hm.client.R().
 		SetHeader("Authorization", token).
-		Get("http://localhost:8080/token")
+		Get(fmt.Sprintf("https://%s/token", hm.addr))
 
 	if err != nil {
 		log.Error().Err(err).Msg("cant request token validation")

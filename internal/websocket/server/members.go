@@ -17,9 +17,11 @@ func (wm *WebsocketManager) GetChatMember(id int) *ChatMember {
 
 func (wm *WebsocketManager) DeleteChatMember(id int) {
 	wm.mu.Lock()
-	wm.chatMembers[id].conn.Close()
-	close(wm.chatMembers[id].out)
-	delete(wm.chatMembers, id)
+	if _, ok := wm.chatMembers[id]; ok {
+		wm.chatMembers[id].conn.Close()
+		close(wm.chatMembers[id].out)
+		delete(wm.chatMembers, id)
+	}
 	wm.mu.Unlock()
 }
 

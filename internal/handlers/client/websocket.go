@@ -17,7 +17,7 @@ func (hm *HandlersManager) NewChatHandler(recipient string) {
 			"Authorization": []string{env.GetToken()},
 			"Recipient":     []string{recipient},
 		},
-	}.Dial(context.TODO(), "ws://localhost:8080/ws/chats")
+	}.Dial(context.TODO(), fmt.Sprintf("wss://%s/ws/chats", hm.addr))
 
 	if err != nil {
 		log.Error().Err(err).Msg("cant request create new chat")
@@ -36,7 +36,7 @@ func (hm *HandlersManager) JoinChatHandler(chatId string) {
 		Header: ws.HandshakeHeaderHTTP{
 			"Authorization": []string{env.GetToken()},
 		},
-	}.Dial(context.TODO(), fmt.Sprintf("ws://localhost:8080/ws/chats/%s", chatId))
+	}.Dial(context.TODO(), fmt.Sprintf("wss://%s/ws/chats/%s", hm.addr, chatId))
 
 	if err != nil {
 		log.Error().Err(err).Msg("cant request join chat")

@@ -14,14 +14,13 @@ import (
 func Reader(wg *sync.WaitGroup, conn net.Conn) {
 	defer wg.Done()
 	for {
-		msg, _, err := wsutil.ReadServerData(conn)
-
+		msg, err := wsutil.ReadServerText(conn)
 		if err != nil {
-			log.Error().Err(err).Msg("cant read message from server")
+			log.Error().Err(err).Msg("cant read message from conn")
 			return
 		}
 
-		fmt.Println(string(msg))
+		fmt.Print(string(msg))
 	}
 }
 
@@ -29,6 +28,8 @@ func Writer(wg *sync.WaitGroup, conn net.Conn) {
 	defer wg.Done()
 	r := bufio.NewReader(os.Stdin)
 	for {
+		r.Reset(os.Stdin)
+
 		msg, err := r.ReadString('\n')
 		if err != nil {
 			log.Error().Err(err).Msg("cant read message from console")
@@ -37,9 +38,8 @@ func Writer(wg *sync.WaitGroup, conn net.Conn) {
 
 		err = wsutil.WriteClientText(conn, []byte(msg))
 		if err != nil {
-			log.Error().Err(err).Msg("cant write message to server")
+			log.Error().Err(err).Msg("cant write message to conn")
 			return
 		}
-		r.Reset(os.Stdin)
 	}
 }

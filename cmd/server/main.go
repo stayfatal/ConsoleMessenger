@@ -22,12 +22,13 @@ func main() {
 	auth.Use(middleware.Authentication())
 
 	auth.GET("/chats", hm.GetChatsHandler)
+	auth.GET("/chats/:id/history", hm.GetLastChatMessagesHandler)
 	auth.GET("/token", hm.ValidateTokenHandler)
 
 	auth.GET("/ws/chats", hm.NewChatHandler)
 	auth.GET("/ws/chats/:id", hm.JoinChatHandler)
 
-	if err := router.Run(":8080"); err != nil {
+	if err := router.Run(":80"); err != nil {
 		log.Fatal().Err(err).Msg("Failed to run server")
 	}
 }

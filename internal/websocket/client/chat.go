@@ -20,7 +20,7 @@ func Reader(wg *sync.WaitGroup, conn net.Conn) {
 			return
 		}
 
-		fmt.Print(string(msg))
+		fmt.Println(string(msg))
 	}
 }
 
@@ -35,6 +35,7 @@ func Writer(wg *sync.WaitGroup, conn net.Conn) {
 			log.Error().Err(err).Msg("cant read message from console")
 			return
 		}
+		fmt.Println()
 
 		err = wsutil.WriteClientText(conn, []byte(msg))
 		if err != nil {

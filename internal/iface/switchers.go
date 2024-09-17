@@ -94,7 +94,7 @@ func (im *InterfaceManager) switchToChatsMenu() {
 
 		switch option {
 		case 1:
-			im.switchToNewChatMenu()
+			im.switchToChatCreationChatMenu()
 		case i:
 			os.Exit(0)
 		default:
@@ -102,13 +102,13 @@ func (im *InterfaceManager) switchToChatsMenu() {
 				log.Info().Msg(fmt.Sprintf("there is no option %d)", option))
 				continue
 			}
-			im.hm.JoinChatHandler(options[option])
+			im.switchToJoinChatMenu(options[option])
 		}
 		break
 	}
 }
 
-func (im *InterfaceManager) switchToNewChatMenu() {
+func (im *InterfaceManager) switchToChatCreationChatMenu() {
 	fmt.Println("Please enter recipient's username\nTo exit write \"back\"")
 
 	var username string
@@ -125,14 +125,22 @@ func (im *InterfaceManager) switchToNewChatMenu() {
 		break
 	}
 
-	im.switchToChatMenu(username)
+	im.switchToNewChatMenu(username)
 }
 
-func (im *InterfaceManager) switchToChatMenu(username string) {
+func (im *InterfaceManager) switchToNewChatMenu(username string) {
 	str := fmt.Sprintf("Chat with %s", username)
 	fmt.Println(str)
 
 	im.hm.NewChatHandler(username)
+}
+
+func (im *InterfaceManager) switchToJoinChatMenu(chatId string) {
+	messages := im.hm.ChatHistoryHandler(chatId)
+	for i := len(messages) - 1; i >= 0; i-- {
+		fmt.Printf("%s : %s\n", messages[i].SenderUsername, messages[i].Message)
+	}
+	im.hm.JoinChatHandler(chatId)
 }
 
 func (im *InterfaceManager) switchToMainMenu() {

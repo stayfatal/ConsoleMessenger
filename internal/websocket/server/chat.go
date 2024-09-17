@@ -28,9 +28,9 @@ func (wm *WebsocketManager) StartReader(id, chatId int) {
 			errCh := make(chan error)
 			go func(errCh chan<- error) {
 				err := wm.dm.SaveMessage(database.Message{
-					ChatId: chatId,
-					UserId: id,
-					Text:   string(msg),
+					ChatId:  chatId,
+					UserId:  id,
+					Message: string(msg),
 				})
 
 				errCh <- err

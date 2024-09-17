@@ -11,33 +11,6 @@ func (dm *DbManager) AddChatMember(cm ChatMember) error {
 	return err
 }
 
-func (dm *DbManager) GetAllUserChats(userId int) (map[int]string, error) {
-	req := `SELECT chat_members.chat_id, chats.name 
-	FROM chats 
-	JOIN chat_members ON chat_members.chat_id = chats.id 
-	WHERE chat_members.user_id = $1`
-	rows, err := dm.db.Query(req, userId)
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[int]string)
-	for rows.Next() {
-		var (
-			id   int
-			name string
-		)
-		err = rows.Scan(&id, &name)
-		if err != nil {
-			return nil, err
-		}
-
-		result[id] = name
-	}
-
-	return result, nil
-}
-
 func (dm *DbManager) GetAllChatMembers(chatId int) ([]int, error) {
 	rows, err := dm.db.Query("select user_id from chat_members where chat_id = $1", chatId)
 	if err != nil {

@@ -3,19 +3,16 @@ package handlers
 import (
 	"fmt"
 	"messenger/internal/env"
+	"messenger/internal/models"
+	"net/http"
 
 	"github.com/rs/zerolog/log"
 )
 
-type ShortMessage struct {
-	SenderUsername string `json:"sender_username"`
-	Message        string `json:"message"`
-}
-
 func (hm *HandlersManager) GetChatsHandler() map[string]string {
 	resp := make(map[string]string)
 
-	_, err := hm.client.R().
+	response, err := hm.client.R().
 		SetHeader("Authorization", env.GetToken()).
 		SetResult(&resp).
 		Get(fmt.Sprintf("https://%s/chats", hm.addr))
@@ -25,13 +22,17 @@ func (hm *HandlersManager) GetChatsHandler() map[string]string {
 		return nil
 	}
 
+	if response.StatusCode() != http.StatusOK {
+		log.Error().Msg(string(response.Body()))
+	}
+
 	return resp
 }
 
-func (hm *HandlersManager) ChatHistoryHandler(chatId string) []ShortMessage {
-	var resp []ShortMessage
+func (hm *HandlersManager) ChatHistoryHandler(chatId string) []models.ShortMessage {
+	var resp []models.ShortMessage
 
-	_, err := hm.client.R().
+	response, err := hm.client.R().
 		SetHeader("Authorization", env.GetToken()).
 		SetResult(&resp).
 		Get(fmt.Sprintf("https://%s/chats/%s/history", hm.addr, chatId))
@@ -39,6 +40,10 @@ func (hm *HandlersManager) ChatHistoryHandler(chatId string) []ShortMessage {
 	if err != nil {
 		log.Error().Err(err).Msg("cant request getting chats")
 		return nil
+	}
+
+	if response.StatusCode() != http.StatusOK {
+		log.Error().Msg(string(response.Body()))
 	}
 
 	return resp

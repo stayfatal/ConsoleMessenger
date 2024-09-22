@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -13,7 +14,7 @@ func (hm *handlersManager) GetChatsHandler(c *gin.Context) {
 
 	chats, err := hm.dm.GetAllUserChats(id)
 	if err != nil {
-		log.Error().Err(err).Msg("cant get user's chats")
+		log.Error().Stack().Err(errors.Wrap(err, "calling GetAllUserChats")).Msg("")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -24,14 +25,14 @@ func (hm *handlersManager) GetChatsHandler(c *gin.Context) {
 func (hm *handlersManager) GetLastChatMessagesHandler(c *gin.Context) {
 	chatId, err := strconv.Atoi(c.Params.ByName("id"))
 	if err != nil {
-		log.Error().Err(err).Msg("cant parse string to int")
+		log.Error().Stack().Err(errors.Wrap(err, "parsing string to int")).Msg("")
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	messages, err := hm.dm.GetLastChatMessages(chatId)
 	if err != nil {
-		log.Error().Err(err).Msg("cant get messages from db")
+		log.Error().Stack().Err(errors.Wrap(err, "calling GetLastChatMessages")).Msg("")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}

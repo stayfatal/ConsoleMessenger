@@ -1,12 +1,8 @@
 package database
 
-type ChatMember struct {
-	Id     int
-	ChatId int
-	UserId int
-}
+import "messenger/internal/models"
 
-func (dm *DbManager) AddChatMember(cm ChatMember) error {
+func (dm *DbManager) AddChatMember(cm models.ChatMember) error {
 	_, err := dm.db.Exec("insert into chat_members (chat_id,user_id) values ($1,$2)", cm.ChatId, cm.UserId)
 	return err
 }

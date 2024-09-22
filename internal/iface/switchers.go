@@ -109,7 +109,7 @@ func (im *InterfaceManager) switchToChatsMenu() {
 }
 
 func (im *InterfaceManager) switchToChatCreationChatMenu() {
-	fmt.Println("Please enter recipient's username\nTo exit write \"back\"")
+	fmt.Println("Please enter recipient's username\nTo exit write \"/back\"")
 
 	var username string
 	for {
@@ -119,7 +119,7 @@ func (im *InterfaceManager) switchToChatCreationChatMenu() {
 			continue
 		}
 
-		if username == "back" {
+		if username == "/back" {
 			im.switchToMainMenu()
 		}
 		break

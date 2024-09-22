@@ -14,7 +14,7 @@ func (hm *HandlersManager) RegistrationHandler(username, password string) {
 	}
 
 	var resp Response
-	_, err := hm.client.R().
+	response, err := hm.client.R().
 		SetHeader("Content-Type", "application/json").
 		SetBody(map[string]interface{}{
 			"username": username,
@@ -28,6 +28,11 @@ func (hm *HandlersManager) RegistrationHandler(username, password string) {
 		return
 	}
 
+	if response.StatusCode() != http.StatusOK {
+		log.Error().Msg(string(response.Body()))
+		return
+	}
+
 	env.WriteToken(resp.Token)
 }
 
@@ -37,7 +42,7 @@ func (hm *HandlersManager) LoginHandler(username, password string) {
 	}
 
 	var resp Response
-	_, err := hm.client.R().
+	response, err := hm.client.R().
 		SetHeader("Content-Type", "application/json").
 		SetBody(map[string]interface{}{
 			"username": username,
@@ -51,13 +56,18 @@ func (hm *HandlersManager) LoginHandler(username, password string) {
 		return
 	}
 
+	if response.StatusCode() != http.StatusOK {
+		log.Error().Msg(string(response.Body()))
+		return
+	}
+
 	env.WriteToken(resp.Token)
 }
 
 func (hm *HandlersManager) ValidateTokenHandler() bool {
 	token := env.GetToken()
 
-	resp, err := hm.client.R().
+	response, err := hm.client.R().
 		SetHeader("Authorization", token).
 		Get(fmt.Sprintf("https://%s/token", hm.addr))
 
@@ -65,6 +75,5 @@ func (hm *HandlersManager) ValidateTokenHandler() bool {
 		log.Error().Err(err).Msg("cant request token validation")
 		return false
 	}
-
-	return resp.StatusCode() == http.StatusOK
+	return response.StatusCode() != http.StatusOK
 }

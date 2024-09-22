@@ -1,13 +1,17 @@
 package authentication
 
 import (
-	"errors"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/pkg/errors"
 )
 
-var secretKey = []byte("super-secret-key")
+var (
+	secretKey  = []byte("super-secret-key")
+	sighError  = errors.New("unknown sigh method")
+	tokenError = errors.New("invalid token")
+)
 
 type Claims struct {
 	Id int
@@ -24,14 +28,16 @@ func CreateToken(Id int) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString(secretKey)
+	t, err := token.SignedString(secretKey)
+
+	return t, errors.Wrap(err, "signing token")
 }
 
 func ValidateToken(token string) (*Claims, error) {
 	claims := &Claims{}
 	parsedToken, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unknown sigh method")
+			return nil, errors.Wrap(sighError, "signing method")
 		}
 
 		return secretKey, nil
@@ -42,7 +48,7 @@ func ValidateToken(token string) (*Claims, error) {
 	}
 
 	if !parsedToken.Valid {
-		return nil, errors.New("invalid token")
+		return nil, errors.Wrap(tokenError, "validating token")
 	}
 
 	return claims, nil

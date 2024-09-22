@@ -2,26 +2,27 @@ package handlers
 
 import (
 	"messenger/internal/authentication"
-	"messenger/internal/database"
+	"messenger/internal/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (hm *handlersManager) CreateUserHandler(c *gin.Context) {
-	user := database.User{}
+func (hm *handlersManager) RegisterHandler(c *gin.Context) {
+	user := models.User{}
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
-		log.Error().Err(err).Msg("")
+		log.Error().Stack().Err(errors.Wrap(err, "binding json")).Msg("")
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	securedPass, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Error().Err(err).Msg("")
+		log.Error().Stack().Err(errors.Wrap(err, "generating hashed password")).Msg("")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -30,14 +31,14 @@ func (hm *handlersManager) CreateUserHandler(c *gin.Context) {
 
 	userId, err := hm.dm.CreateUser(user)
 	if err != nil {
-		log.Error().Err(err).Msg("unable to create user")
+		log.Error().Stack().Err(errors.Wrap(err, "calling CreateUser")).Msg("")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	token, err := authentication.CreateToken(userId)
 	if err != nil {
-		log.Error().Err(err).Msg("unable to create token")
+		log.Error().Stack().Err(errors.Wrap(err, "calling CreateToken")).Msg("")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -46,26 +47,26 @@ func (hm *handlersManager) CreateUserHandler(c *gin.Context) {
 }
 
 func (hm *handlersManager) LoginHandler(c *gin.Context) {
-	user := database.User{}
+	user := models.User{}
 	c.ShouldBindJSON(&user)
 
 	scannedUser, err := hm.dm.GetUserByName(user.Username)
 	if err != nil {
-		log.Error().Err(err).Msg("user not found")
+		log.Error().Stack().Err(errors.Wrap(err, "calling GetUserByName")).Msg("")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(scannedUser.Password), []byte(user.Password))
 	if err != nil {
-		log.Error().Err(err).Msg("non-registered user")
+		log.Error().Stack().Err(errors.Wrap(err, "comparing password to hashed password")).Msg("")
 		c.String(http.StatusForbidden, err.Error())
 		return
 	}
 
 	token, err := authentication.CreateToken(scannedUser.Id)
 	if err != nil {
-		log.Error().Err(err).Msg("cant create token")
+		log.Error().Stack().Err(errors.Wrap(err, "calling CreateToken")).Msg("")
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}

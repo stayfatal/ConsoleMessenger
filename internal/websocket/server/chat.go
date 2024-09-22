@@ -1,9 +1,10 @@
 package websocket
 
 import (
-	"messenger/internal/database"
+	"messenger/internal/models"
 
 	"github.com/gobwas/ws/wsutil"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 )
 
@@ -19,7 +20,7 @@ func (wm *WebsocketManager) StartReader(id, chatId int) {
 			msg, err := wsutil.ReadClientText(cm.conn)
 			if err != nil {
 				wm.DeleteChatMember(id)
-				log.Error().Err(err).Msg("cant read from conn")
+				log.Error().Stack().Err(errors.Wrap(err, "reading client message")).Msg("")
 				return
 			}
 
@@ -27,7 +28,7 @@ func (wm *WebsocketManager) StartReader(id, chatId int) {
 
 			errCh := make(chan error)
 			go func(errCh chan<- error) {
-				err := wm.dm.SaveMessage(database.Message{
+				err := wm.dm.SaveMessage(models.Message{
 					ChatId:  chatId,
 					UserId:  id,
 					Message: string(msg),
@@ -38,7 +39,8 @@ func (wm *WebsocketManager) StartReader(id, chatId int) {
 
 			err = <-errCh
 			if err != nil {
-				log.Error().Err(err).Msg("cant save message")
+				log.Error().Stack().Err(errors.Wrap(err, "saving message to db")).Msg("")
+				return
 			}
 		}
 	}()
@@ -65,7 +67,7 @@ func (wm *WebsocketManager) StartWriter(id int) {
 			err := wsutil.WriteServerText(cm.conn, msg)
 			if err != nil {
 				wm.DeleteChatMember(id)
-				log.Error().Err(err).Msg("cant write to conn")
+				log.Error().Stack().Err(errors.Wrap(err, "writing message to client")).Msg("")
 				return
 			}
 		}
@@ -75,7 +77,7 @@ func (wm *WebsocketManager) StartWriter(id int) {
 func (wm *WebsocketManager) BroadCast(id, chatId int, msg []byte) {
 	members, err := wm.dm.GetAllChatMembers(chatId)
 	if err != nil {
-		log.Error().Err(err).Msg("cant get all chat's members")
+		log.Error().Stack().Err(errors.Wrap(err, "calling GetAllChatMembers")).Msg("")
 		return
 	}
 	for _, recipientId := range members {

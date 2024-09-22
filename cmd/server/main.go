@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/pkgerrors"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 
 	hm := handlers.NewHandlersManager()
 
-	router.POST("/register", hm.CreateUserHandler)
+	router.POST("/register", hm.RegisterHandler)
 	router.POST("/login", hm.LoginHandler)
 
 	auth := router.Group("/")
@@ -35,4 +36,5 @@ func main() {
 
 func init() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 }

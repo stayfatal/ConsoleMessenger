@@ -1,8 +1,8 @@
-package handlers
+package controller
 
 import (
 	"fmt"
-	"messenger/internal/env"
+	"messenger/internal/utils"
 	"net/http"
 
 	"github.com/rs/zerolog/log"
@@ -33,7 +33,7 @@ func (hm *HandlersManager) RegistrationHandler(username, password string) {
 		return
 	}
 
-	env.WriteToken(resp.Token)
+	utils.WriteToken(resp.Token)
 }
 
 func (hm *HandlersManager) LoginHandler(username, password string) {
@@ -61,11 +61,11 @@ func (hm *HandlersManager) LoginHandler(username, password string) {
 		return
 	}
 
-	env.WriteToken(resp.Token)
+	utils.WriteToken(resp.Token)
 }
 
 func (hm *HandlersManager) ValidateTokenHandler() bool {
-	token := env.GetToken()
+	token := utils.GetToken()
 
 	response, err := hm.client.R().
 		SetHeader("Authorization", token).
@@ -75,5 +75,5 @@ func (hm *HandlersManager) ValidateTokenHandler() bool {
 		log.Error().Err(err).Msg("cant request token validation")
 		return false
 	}
-	return response.StatusCode() != http.StatusOK
+	return response.StatusCode() == http.StatusOK
 }

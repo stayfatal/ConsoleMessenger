@@ -1,10 +1,10 @@
-package handlers
+package controller
 
 import (
 	"context"
 	"fmt"
-	"messenger/internal/env"
-	websocket "messenger/internal/websocket/client"
+	chatSvc "messenger/internal/service/client"
+	"messenger/internal/utils"
 	"sync"
 
 	"github.com/gobwas/ws"
@@ -14,7 +14,7 @@ import (
 func (hm *HandlersManager) NewChatHandler(recipient string) {
 	conn, _, _, err := ws.Dialer{
 		Header: ws.HandshakeHeaderHTTP{
-			"Authorization": []string{env.GetToken()},
+			"Authorization": []string{utils.GetToken()},
 			"Recipient":     []string{recipient},
 		},
 	}.Dial(context.TODO(), fmt.Sprintf("wss://%s/ws/chats", hm.addr))
@@ -26,15 +26,15 @@ func (hm *HandlersManager) NewChatHandler(recipient string) {
 
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go websocket.Reader(&wg, conn)
-	go websocket.Writer(&wg, conn)
+	go chatSvc.Reader(&wg, conn)
+	go chatSvc.Writer(&wg, conn)
 	wg.Wait()
 }
 
 func (hm *HandlersManager) JoinChatHandler(chatId string) {
 	conn, _, _, err := ws.Dialer{
 		Header: ws.HandshakeHeaderHTTP{
-			"Authorization": []string{env.GetToken()},
+			"Authorization": []string{utils.GetToken()},
 		},
 	}.Dial(context.TODO(), fmt.Sprintf("wss://%s/ws/chats/%s", hm.addr, chatId))
 
@@ -45,7 +45,7 @@ func (hm *HandlersManager) JoinChatHandler(chatId string) {
 
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go websocket.Reader(&wg, conn)
-	go websocket.Writer(&wg, conn)
+	go chatSvc.Reader(&wg, conn)
+	go chatSvc.Writer(&wg, conn)
 	wg.Wait()
 }

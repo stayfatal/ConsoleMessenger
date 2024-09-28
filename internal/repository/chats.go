@@ -1,13 +1,13 @@
-package database
+package repository
 
 import "messenger/internal/models"
 
-func (dm *DbManager) CreateChat(chat models.Chat) (id int, err error) {
+func (dm *repository) CreateChat(chat models.Chat) (id int, err error) {
 	err = dm.db.QueryRow("insert into chats (name) values ($1) returning id", chat.Name).Scan(&id)
 	return
 }
 
-func (dm *DbManager) GetAllUserChats(userId int) (map[int]string, error) {
+func (dm *repository) GetAllUserChats(userId int) (map[int]string, error) {
 	req := `SELECT chat_members.chat_id, chats.name 
 	FROM chats 
 	JOIN chat_members ON chat_members.chat_id = chats.id 

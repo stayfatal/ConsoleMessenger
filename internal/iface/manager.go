@@ -1,15 +1,15 @@
 package iface
 
 import (
-	handlers "messenger/internal/handlers/client"
+	controller "messenger/internal/controller/client"
 )
 
 type InterfaceManager struct {
-	hm *handlers.HandlersManager
+	hm *controller.HandlersManager
 }
 
 func NewInterfaceManager() *InterfaceManager {
-	return &InterfaceManager{hm: handlers.GetHandlersManager()}
+	return &InterfaceManager{hm: controller.GetHandlersManager()}
 }
 
 func (im *InterfaceManager) RunApp() {

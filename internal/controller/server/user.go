@@ -11,7 +11,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (hm *handlersManager) RegisterHandler(c *gin.Context) {
+func (cr *Controller) Register(c *gin.Context) {
 	user := models.User{}
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
@@ -29,7 +29,7 @@ func (hm *handlersManager) RegisterHandler(c *gin.Context) {
 
 	user.Password = string(securedPass)
 
-	userId, err := hm.dm.CreateUser(user)
+	userId, err := cr.repo.CreateUser(user)
 	if err != nil {
 		log.Error().Stack().Err(errors.Wrap(err, "calling CreateUser")).Msg("")
 		c.String(http.StatusInternalServerError, err.Error())
@@ -46,11 +46,11 @@ func (hm *handlersManager) RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-func (hm *handlersManager) LoginHandler(c *gin.Context) {
+func (cr *Controller) Login(c *gin.Context) {
 	user := models.User{}
 	c.ShouldBindJSON(&user)
 
-	scannedUser, err := hm.dm.GetUserByName(user.Username)
+	scannedUser, err := cr.repo.GetUserByName(user.Username)
 	if err != nil {
 		log.Error().Stack().Err(errors.Wrap(err, "calling GetUserByName")).Msg("")
 		c.String(http.StatusInternalServerError, err.Error())
@@ -74,6 +74,6 @@ func (hm *handlersManager) LoginHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
-func (hm *handlersManager) ValidateTokenHandler(c *gin.Context) {
+func (cr *Controller) ValidateTokenHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, "")
 }

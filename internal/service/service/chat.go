@@ -1,4 +1,4 @@
-package websocket
+package service
 
 import (
 	"messenger/internal/models"
@@ -8,27 +8,27 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (wm *WebsocketManager) JoinChat(id, chatId int) {
-	wm.StartReader(id, chatId)
-	wm.StartWriter(id)
+func (cs *ChatService) JoinChat(id, chatId int) {
+	cs.startReader(id, chatId)
+	cs.startWriter(id)
 }
 
-func (wm *WebsocketManager) StartReader(id, chatId int) {
+func (wm *ChatService) startReader(id, chatId int) {
 	go func() {
-		cm := wm.GetChatMember(id)
+		cm := wm.getChatMember(id)
 		for {
 			msg, err := wsutil.ReadClientText(cm.conn)
 			if err != nil {
-				wm.DeleteChatMember(id)
+				wm.deleteChatMember(id)
 				log.Error().Stack().Err(errors.Wrap(err, "reading client message")).Msg("")
 				return
 			}
 
-			wm.BroadCast(id, chatId, msg)
+			wm.broadcast(id, chatId, msg)
 
 			errCh := make(chan error)
 			go func(errCh chan<- error) {
-				err := wm.dm.SaveMessage(models.Message{
+				err := wm.repo.SaveMessage(models.Message{
 					ChatId:  chatId,
 					UserId:  id,
 					Message: string(msg),
@@ -46,9 +46,9 @@ func (wm *WebsocketManager) StartReader(id, chatId int) {
 	}()
 }
 
-func (wm *WebsocketManager) StartWriter(id int) {
+func (wm *ChatService) startWriter(id int) {
 	go func() {
-		cm := wm.GetChatMember(id)
+		cm := wm.getChatMember(id)
 		// type Message struct {
 		// 	senderUsername string
 		// 	message        string
@@ -66,7 +66,7 @@ func (wm *WebsocketManager) StartWriter(id int) {
 
 			err := wsutil.WriteServerText(cm.conn, msg)
 			if err != nil {
-				wm.DeleteChatMember(id)
+				wm.deleteChatMember(id)
 				log.Error().Stack().Err(errors.Wrap(err, "writing message to client")).Msg("")
 				return
 			}
@@ -74,15 +74,15 @@ func (wm *WebsocketManager) StartWriter(id int) {
 	}()
 }
 
-func (wm *WebsocketManager) BroadCast(id, chatId int, msg []byte) {
-	members, err := wm.dm.GetAllChatMembers(chatId)
+func (wm *ChatService) broadcast(id, chatId int, msg []byte) {
+	members, err := wm.repo.GetAllChatMembers(chatId)
 	if err != nil {
 		log.Error().Stack().Err(errors.Wrap(err, "calling GetAllChatMembers")).Msg("")
 		return
 	}
 	for _, recipientId := range members {
-		if recipientId != id && wm.IsConnected(recipientId) {
-			recipient := wm.GetChatMember(recipientId)
+		if recipientId != id && wm.isConnected(recipientId) {
+			recipient := wm.getChatMember(recipientId)
 			recipient.out <- msg
 		}
 	}

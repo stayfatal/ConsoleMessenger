@@ -1,8 +1,12 @@
 package main
 
 import (
-	handlers "messenger/internal/handlers/server"
+	"fmt"
+	"messenger/config"
+	controller "messenger/internal/controller/server"
 	"messenger/internal/middleware"
+	"messenger/internal/repository"
+	"messenger/internal/service/service"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -14,22 +18,30 @@ import (
 func main() {
 	router := gin.Default()
 
-	hm := handlers.NewHandlersManager()
+	cfg := config.New()
 
-	router.POST("/register", hm.RegisterHandler)
-	router.POST("/login", hm.LoginHandler)
+	db := config.NewDB(cfg)
+
+	repo := repository.New(db)
+
+	cs := service.New(repo)
+
+	cr := controller.New(repo, cs)
+
+	router.POST("/register", cr.Register)
+	router.POST("/login", cr.Login)
 
 	auth := router.Group("/")
 	auth.Use(middleware.Authentication())
 
-	auth.GET("/chats", hm.GetChatsHandler)
-	auth.GET("/chats/:id/history", hm.GetLastChatMessagesHandler)
-	auth.GET("/token", hm.ValidateTokenHandler)
+	auth.GET("/chats", cr.GetChats)
+	auth.GET("/chats/:id/history", cr.GetLastChatMessages)
+	auth.GET("/token", cr.ValidateTokenHandler)
 
-	auth.GET("/ws/chats", hm.NewChatHandler)
-	auth.GET("/ws/chats/:id", hm.JoinChatHandler)
+	auth.GET("/ws/chats", cr.NewChat)
+	auth.GET("/ws/chats/:id", cr.JoinChat)
 
-	if err := router.Run(":80"); err != nil {
+	if err := router.Run(fmt.Sprintf(":%s", cfg.PORT)); err != nil {
 		log.Fatal().Err(err).Msg("Failed to run server")
 	}
 }

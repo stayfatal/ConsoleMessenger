@@ -8,8 +8,11 @@ import (
 	"messenger/internal/repository"
 	"messenger/internal/service/service"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
@@ -41,9 +44,20 @@ func main() {
 	auth.GET("/ws/chats", cr.NewChat)
 	auth.GET("/ws/chats/:id", cr.JoinChat)
 
-	if err := router.Run(fmt.Sprintf(":%s", cfg.PORT)); err != nil {
-		log.Fatal().Err(err).Msg("Failed to run server")
-	}
+	errs := make(chan error)
+	go func() {
+		err := router.Run(fmt.Sprintf(":%s", cfg.PORT))
+		errs <- errors.Wrap(err, "running server")
+	}()
+
+	go func() {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+		buf := <-c
+		errs <- errors.New(buf.String())
+	}()
+
+	log.Fatal().Err(<-errs).Msg("")
 }
 
 func init() {
